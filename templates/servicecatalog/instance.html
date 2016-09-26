@@ -1,0 +1,141 @@
+{% extends "servicecatalog/base.html" %}
+
+{% block content %}
+    <!-- Page Heading -->
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">
+                {% if my_instance.name %}
+                    {{ my_instance.name }}
+                    <small>
+                        <a href="/module/{{ my_instance.module.slug }}/">{{ my_instance.module.name }}</a>,
+                        {{ my_instance.get_environment_display }}
+                        {{ my_instance.location.name }}
+                    </small>
+                {% else %}
+                    <a href="/module/{{ my_instance.module.slug }}/"><i class="fa fa-cubes"
+                                                                        aria-hidden="true"></i>{{ my_instance.module.name }}
+                    </a>,
+                    {{ my_instance.get_environment_display }},
+                    {{ my_instance.location.name }}                {% endif %}
+            </h1>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="/"><i class="fa fa-home"></i> Home</a>
+                </li>
+                <li>
+                    <a href="/module/{{ my_instance.module.slug }}/"><i class="fa fa-cube"></i> {{ my_instance.module }}</a>
+                </li>
+                <li class="active">
+                    <i class="fa fa-cubes"></i> {{ my_instance.name }}
+                </li>
+            </ol>
+        </div>
+    </div>
+    <!-- /.row -->
+    {% if my_instance.state == "dev" %}
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="alert alert-info">
+                        <strong>Info:</strong> This instance is beeing configured and not ready for use.
+                </div>
+            </div>
+        </div>
+    {% elif my_instance.state == "depricated" %}
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="alert alert-warning">
+                        <strong>Info:</strong> This instance is depricated.
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><i class="fa fa-users fa-fw"></i>Service
+                        Delivery: {{ my_instance.service_delivery.name }}</h3>
+                </div>
+                <div class="panel-body">
+                    <ul class="list-group">
+                        {% for contact_method in my_instance.service_delivery.contact_to_method.all %}
+                            <li class="list-group-item">
+
+                                {% if contact_method.method == 'email' %}
+                                    <i class="fa fa-envelope-o fa-fw"></i>
+                                    <a href="mailto:{{ contact_method.value }}">{{ contact_method.value }}</a>
+                                {% elif contact_method.method == 'lync' %}
+                                    <i class="fa fa-comments fa-fw"></i>
+                                    <a href="sip:{{ contact_method.value }}">{{ contact_method.value }}</a>
+                                {% elif contact_method.method == 'phone' %}
+                                    <i class="fa fa-phone fa-fw"></i>
+                                    <a href="callto:{{ contact_method.value }}">{{ contact_method.value }}</a>
+                                {% elif contact_method.method == 'mobile' %}
+                                    <i class="fa fa-mobile fa-fw"></i>
+                                    <a href="callto:{{ contact_method.value }}">{{ contact_method.value }}</a>
+                                {% elif contact_method.method == 'ocd' %}
+                                    <i class="fa fa-ambulance fa-fw"></i>
+                                    <a href="callto:{{ contact_method.value }}">{{ contact_method.value }}</a>
+                                {% elif contact_method.method == 'web' %}
+                                    <i class="fa fa-book fa-fw"></i>
+                                    <a href="callto:{{ contact_method.value }}">{{ contact_method.value }}</a>
+                                {% elif contact_method.method == 'ticket' %}
+                                    <i class="fa fa-bug fa-fw"></i>
+                                    <a href="callto:{{ contact_method.value }}">{{ contact_method.value }}</a>
+                                {% else %}
+                                    {{ contact_method.get_method_name }} {{ contact_method.value }}
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+            {% if my_instance.belongs_to_instance.all %}
+                <div class="col-lg-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><i class="fa fa-server fa-fw"></i> Hardware </h3>
+                        </div>
+                        <div class="panel-body">
+                            <table class="table table-bordered table-hover table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for hardware in my_instance.belongs_to_instance.all %}
+                                    <tr>
+                                        <td>
+                                            <a href="/hardware/{{ instance.slug }}/">
+                                                {{ hardware.name }} ({{ hardware.get_type_display }})
+                                            </a>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                        {% endif %}
+        <div class="col-lg-4">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><i class="fa fa-sitemap" aria-hidden="true"></i> Dpendencies </h3>
+                </div>
+                <div class="panel-body" align="middle">
+
+                    {{ my_graph|safe }}
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- /.row -->
+{% endblock %}
